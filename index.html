@@ -1,1189 +1,519 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Leftover Chef - Generator Resep Pintar</title>
+    <title>MindSpark AI - Kuis & Flashcard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #FF9F43;
-            --success: #2DCC71;
-            --warning: #F39C12;
-            --danger: #E74C3C;
-            --secondary: #95A5A6;
-            --bg-light: #FFFFFF;
-            --bg-dark: #F5F5F5;
-            --text-dark: #2C3E50;
-            --text-light: #7F8C8D;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-dark);
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            background: linear-gradient(135deg, var(--primary) 0%, #FF8C1A 100%);
-            color: white;
-            padding: 40px 0;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        header p {
-            font-size: 1.1em;
-            opacity: 0.95;
-        }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 40% 60%;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .panel {
-            background: var(--bg-light);
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-        }
-
-        .panel h2 {
-            font-size: 1.5em;
-            margin-bottom: 20px;
-            color: var(--primary);
-            border-bottom: 3px solid var(--primary);
-            padding-bottom: 10px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-dark);
-            font-size: 0.95em;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #E0E0E0;
-            border-radius: 8px;
-            font-size: 1em;
-            font-family: inherit;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(255, 159, 67, 0.1);
-        }
-
-        input[type="text"].error,
-        input[type="number"].error,
-        select.error {
-            border-color: var(--danger);
-            background-color: rgba(231, 76, 60, 0.05);
-        }
-
-        .input-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 15px;
-        }
-
-        .ingredient-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 15px 0;
-            min-height: 30px;
-        }
-
-        .tag {
-            background: linear-gradient(135deg, var(--primary) 0%, #FF8C1A 100%);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9em;
-            box-shadow: 0 2px 8px rgba(255, 159, 67, 0.3);
-        }
-
-        .tag button {
-            background: rgba(255,255,255,0.3);
-            border: none;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-        }
-
-        .tag button:hover {
-            background: rgba(255,255,255,0.5);
-        }
-
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin: 15px 0;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: var(--primary);
-        }
-
-        .checkbox-item label {
-            margin: 0;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-        }
-
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, #FF8C1A 100%);
-            color: white;
-            flex: 1;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 159, 67, 0.3);
-        }
-
-        .btn-primary:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #7F8C8D;
-        }
-
-        .error-message {
-            color: var(--danger);
-            font-size: 0.9em;
-            margin-top: 5px;
-            display: none;
-        }
-
-        .error-message.show {
-            display: block;
-        }
-
-        .recipes-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            min-height: 200px;
-        }
-
-        .recipe-card {
-            background: var(--bg-light);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .recipe-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
-        }
-
-        .recipe-header {
-            background: linear-gradient(135deg, var(--primary) 0%, #FF8C1A 100%);
-            color: white;
-            padding: 20px;
-        }
-
-        .recipe-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .recipe-badges {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            background: rgba(255,255,255,0.3);
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-
-        .recipe-body {
-            padding: 20px;
-            flex: 1;
-            overflow-y: auto;
-            max-height: 400px;
-        }
-
-        .recipe-section {
-            margin-bottom: 15px;
-        }
-
-        .recipe-section h4 {
-            color: var(--primary);
-            margin-bottom: 8px;
-            font-size: 0.95em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .recipe-section ul,
-        .recipe-section ol {
-            margin-left: 20px;
-            font-size: 0.95em;
-            line-height: 1.8;
-        }
-
-        .recipe-section li {
-            margin-bottom: 6px;
-            color: var(--text-dark);
-        }
-
-        .warning-box {
-            background-color: rgba(243, 156, 18, 0.1);
-            border-left: 4px solid var(--warning);
-            padding: 12px;
-            border-radius: 4px;
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: var(--text-dark);
-        }
-
-        .tips-box {
-            background-color: rgba(45, 204, 113, 0.1);
-            border-left: 4px solid var(--success);
-            padding: 12px;
-            border-radius: 4px;
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: var(--text-dark);
-        }
-
-        .recipe-footer {
-            padding: 15px 20px;
-            border-top: 1px solid #E0E0E0;
-            display: flex;
-            gap: 8px;
-        }
-
-        .recipe-footer button {
-            flex: 1;
-            padding: 10px;
-            font-size: 0.9em;
-            border: 2px solid var(--primary);
-            background: white;
-            color: var(--primary);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .recipe-footer button:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .loading-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 300px;
-            gap: 20px;
-        }
-
-        .loading-animation {
-            display: flex;
-            gap: 10px;
-            font-size: 2em;
-        }
-
-        .cooking-icon {
-            animation: cook 1s ease-in-out infinite;
-        }
-
-        @keyframes cook {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-10px) rotate(5deg); }
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #E0E0E0;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary) 0%, #FF8C1A 100%);
-            animation: progress 2s ease-in-out infinite;
-        }
-
-        @keyframes progress {
-            0% { width: 0%; }
-            50% { width: 100%; }
-            100% { width: 100%; }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-light);
-        }
-
-        .empty-state p {
-            margin-bottom: 0;
-            font-size: 1.1em;
-        }
-
-        footer {
-            background: var(--text-dark);
-            color: white;
-            text-align: center;
-            padding: 20px;
-            margin-top: 40px;
-        }
-
-        .success-message {
-            background-color: rgba(45, 204, 113, 0.1);
-            border-left: 4px solid var(--success);
-            color: var(--success);
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .success-message.show {
-            display: block;
-        }
-
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 50% 50%;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-
-            header h1 {
-                font-size: 1.8em;
-            }
-
-            .input-row {
-                grid-template-columns: 1fr;
-            }
-
-            .checkbox-group {
-                grid-template-columns: 1fr;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            .recipes-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        /* Typography */
+        h1, h2, h3, h4, .brand-font { font-family: 'Playfair Display', serif; }
+        body, input, button, textarea, div { font-family: 'Lato', sans-serif; }
+
+        /* Animation */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader {
+            border: 4px solid #f3f3f3; border-top: 4px solid #4F46E5;
+            border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;
+        }
+
+        .ai-gradient {
+            background: linear-gradient(270deg, #4F46E5, #9333ea, #ec4899);
+            background-size: 200% 200%;
+            animation: sparkle 3s ease infinite;
+        }
+        @keyframes sparkle { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     </style>
 </head>
-<body>
-    <header>
-        <h1>🍳 Smart Leftover Chef</h1>
-        <p>Ubah sisa bahan menjadi hidangan lezat dengan bantuan AI</p>
-    </header>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col overflow-x-hidden">
 
-    <div class="container">
-        <div class="main-grid">
-            <!-- LEFT PANEL: INPUT FORM -->
-            <div class="panel">
-                <h2>📝 Bahan Anda</h2>
-                <div id="successMessage" class="success-message"></div>
-
-                <!-- Input Bahan -->
-                <div class="form-group">
-                    <label>Nama Bahan</label>
-                    <input type="text" id="ingredientName" placeholder="Contoh: Telur Ayam, Tomat Segar" maxlength="50">
-                    <div class="error-message" id="nameError"></div>
-                </div>
-
-                <div class="input-row">
-                    <div class="form-group" style="grid-column: 1;">
-                        <label>Berat/Jumlah</label>
-                        <input type="number" id="ingredientAmount" placeholder="3" min="0.1" max="10000" step="0.1">
-                        <div class="error-message" id="amountError"></div>
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 px-6 fixed w-full z-20 top-0">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="app.showScreen('home')">
+                <i class="fa-solid fa-brain text-indigo-600 text-2xl"></i>
+                <span class="text-2xl font-bold brand-font text-gray-800">MindSpark <span class="text-purple-500">AI</span></span>
+            </div>
+            
+            <div class="flex items-center space-x-3">
+                <!-- Settings Button -->
+                <button onclick="app.toggleSettings()" class="text-gray-500 hover:text-indigo-600 transition p-2 rounded-full hover:bg-gray-100">
+                    <i class="fa-solid fa-gear text-xl"></i>
+                </button>
+                
+                <div id="header-controls" class="hidden flex items-center space-x-3">
+                    <div id="timer-display" class="bg-red-100 text-red-600 px-3 py-1 rounded-full font-bold hidden text-sm border border-red-200">
+                        <i class="fa-regular fa-clock mr-1"></i><span id="time-value">00:00</span>
                     </div>
-                    <div class="form-group" style="grid-column: 2;">
-                        <label>Unit</label>
-                        <select id="ingredientUnit">
-                            <option value="">Pilih Unit</option>
-                            <option value="gram">gram</option>
-                            <option value="ml">ml</option>
-                            <option value="butir">butir</option>
-                            <option value="ikat">ikat</option>
-                            <option value="potong">potong</option>
-                            <option value="sendok makan">sdm</option>
-                            <option value="cangkir">cangkir</option>
-                        </select>
-                        <div class="error-message" id="unitError"></div>
-                    </div>
-                    <div class="form-group" style="grid-column: 3;">
-                        <label>Kategori</label>
-                        <select id="ingredientCategory">
-                            <option value="">Pilih Kategori</option>
-                            <option value="Protein">Protein</option>
-                            <option value="Sayuran">Sayuran</option>
-                            <option value="Karbohidrat">Karbohidrat</option>
-                            <option value="Dairy">Dairy</option>
-                            <option value="Buah">Buah</option>
-                        </select>
-                        <div class="error-message" id="categoryError"></div>
-                    </div>
-                </div>
-
-                <div class="ingredient-tags" id="ingredientTags"></div>
-
-                <p style="font-size: 0.85em; color: var(--text-light); margin-top: 10px;">
-                    💡 Tip: Tekan <strong>Enter</strong> untuk menambah bahan atau <strong>CTRL + Enter</strong> untuk generate resep
-                </p>
-
-                <!-- Bumbu Section -->
-                <h2 style="margin-top: 30px;">🌶️ Bumbu Tersedia</h2>
-                <div class="checkbox-group">
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-garam" checked>
-                        <label for="bumbu-garam">Garam</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-gula" checked>
-                        <label for="bumbu-gula">Gula</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-merica" checked>
-                        <label for="bumbu-merica">Merica</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-minyak" checked>
-                        <label for="bumbu-minyak">Minyak Goreng</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-kecap" checked>
-                        <label for="bumbu-kecap">Kecap Manis</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-bawang-putih" checked>
-                        <label for="bumbu-bawang-putih">Bawang Putih</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-bawang-merah" checked>
-                        <label for="bumbu-bawang-merah">Bawang Merah</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-cabai">
-                        <label for="bumbu-cabai">Cabai</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-santan">
-                        <label for="bumbu-santan">Santan</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-kemiri">
-                        <label for="bumbu-kemiri">Kemiri</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-kunyit">
-                        <label for="bumbu-kunyit">Kunyit</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="bumbu-jahe">
-                        <label for="bumbu-jahe">Jahe</label>
-                    </div>
-                </div>
-
-                <!-- Preferensi Section -->
-                <h2 style="margin-top: 30px;">⚙️ Preferensi</h2>
-
-                <div class="form-group">
-                    <label>Tingkat Pedas</label>
-                    <select id="spiceLevel">
-                        <option value="Tidak Pedas">Tidak Pedas</option>
-                        <option value="Ringan">Ringan 🌶️</option>
-                        <option value="Sedang">Sedang 🌶️🌶️</option>
-                        <option value="Pedas">Pedas 🌶️🌶️🌶️</option>
-                        <option value="Super Pedas">Super Pedas 🔥🔥🔥</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Metode Masak</label>
-                    <select id="cookingMethod">
-                        <option value="Semua">Semua Metode</option>
-                        <option value="Goreng">Goreng</option>
-                        <option value="Rebus">Rebus</option>
-                        <option value="Kukus">Kukus</option>
-                        <option value="Panggang">Panggang</option>
-                        <option value="Tumis">Tumis</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Waktu Maksimal</label>
-                    <select id="maxTime">
-                        <option value="15">15 Menit</option>
-                        <option value="30">30 Menit</option>
-                        <option value="45">45 Menit</option>
-                        <option value="60">60 Menit</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Tingkat Kesulitan</label>
-                    <select id="difficulty">
-                        <option value="Mudah">Mudah</option>
-                        <option value="Sedang">Sedang</option>
-                        <option value="Sulit">Sulit</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Alergi/Hindari (pisahkan dengan koma)</label>
-                    <textarea id="allergies" placeholder="Contoh: Kacang, Telur, Seafood" rows="3"></textarea>
-                </div>
-
-                <div class="button-group">
-                    <button class="btn-primary" id="generateBtn" onclick="generateRecipes()">🍳 Masak Sekarang!</button>
+                    <button onclick="app.showScreen('home')" class="text-gray-500 hover:text-red-500 transition font-bold text-sm">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
                 </div>
             </div>
+        </div>
+    </header>
 
-            <!-- RIGHT PANEL: RESULTS -->
-            <div class="panel">
-                <h2>👨‍🍳 Resep Anda</h2>
-                <div id="recipesContainer" class="recipes-grid">
-                    <div class="empty-state">
-                        <p>📊 Masukkan bahan dan klik "Masak Sekarang!" untuk melihat resep</p>
-                    </div>
+    <!-- Settings Modal (For API Key) -->
+    <div id="modal-settings" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+            <div class="bg-gray-800 p-4 text-white flex justify-between items-center">
+                <h3 class="font-bold flex items-center"><i class="fa-solid fa-key mr-2"></i> Pengaturan API</h3>
+                <button onclick="app.toggleSettings()" class="hover:text-gray-300"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-600 mb-4">Masukkan Google Gemini API Key Anda agar fitur AI dapat berjalan.</p>
+                <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Gemini API Key</label>
+                <div class="relative">
+                    <input type="password" id="input-api-key" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none pr-10 text-sm" placeholder="Paste kunci AIza... disini">
+                    <button onclick="app.toggleShowApiKey()" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-eye" id="icon-eye"></i>
+                    </button>
                 </div>
+                <div class="mt-4 flex justify-between items-center">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-indigo-600 hover:underline">Dapatkan API Key disini &rarr;</a>
+                    <button onclick="app.saveApiKey()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition shadow-lg">
+                        Simpan
+                    </button>
+                </div>
+                <p id="api-status" class="text-xs text-center mt-3 text-gray-400 italic"></p>
             </div>
         </div>
     </div>
 
-    <footer>
-        <p>&copy; 2025 Smart Leftover Chef - Ubah Sisa Jadi Istimewa ✨</p>
-    </footer>
+    <!-- Main Content -->
+    <main class="flex-grow pt-24 pb-10 px-4">
+        <div class="max-w-4xl mx-auto">
+            
+            <!-- 1. Home Screen -->
+            <div id="screen-home" class="text-center py-10">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 brand-font">Belajar Pintar dengan AI</h1>
+                <p class="text-lg text-gray-600 mb-10 max-w-2xl mx-auto">Upload materi atau biarkan <span class="text-indigo-600 font-bold">Gemini AI</span> membuatkan soal.</p>
+                
+                <div class="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                    <!-- Quiz Card -->
+                    <div onclick="app.selectMode('quiz')" class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl cursor-pointer border-t-4 border-indigo-600 group transition hover:-translate-y-1">
+                        <div class="w-14 h-14 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-indigo-600 transition">
+                            <i class="fa-solid fa-clipboard-question text-2xl text-indigo-600 group-hover:text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold mb-1">Mode Kuis</h2>
+                        <p class="text-sm text-gray-500">Pilihan ganda, skor & timer.</p>
+                    </div>
+
+                    <!-- Flashcard Card -->
+                    <div onclick="app.selectMode('flashcard')" class="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl cursor-pointer border-t-4 border-emerald-500 group transition hover:-translate-y-1">
+                        <div class="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-emerald-500 transition">
+                            <i class="fa-solid fa-layer-group text-2xl text-emerald-500 group-hover:text-white"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold mb-1">Flashcard</h2>
+                        <p class="text-sm text-gray-500">Hafalan cepat kartu bolak-balik.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Upload / Generate Screen -->
+            <div id="screen-upload" class="hidden max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+                <button onclick="app.showScreen('home')" class="mb-6 text-gray-500 hover:text-gray-800 text-sm font-bold flex items-center"><i class="fa-solid fa-arrow-left mr-2"></i> Kembali</button>
+                <h2 class="text-3xl font-bold mb-6 text-center text-gray-800 brand-font">Sumber Materi</h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- AI Generator -->
+                    <div class="bg-purple-50 p-6 rounded-xl border border-purple-100 flex flex-col">
+                        <div class="flex items-center mb-3 text-purple-700">
+                            <i class="fa-solid fa-wand-magic-sparkles text-xl mr-2"></i>
+                            <h3 class="text-lg font-bold">Generate Otomatis</h3>
+                        </div>
+                        <textarea id="ai-topic-input" class="w-full p-3 border border-purple-200 rounded-lg text-sm mb-4 h-32 resize-none focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Contoh: 'Tata Surya', 'Rumus Kimia Dasar', atau paste teks materi..."></textarea>
+                        <button onclick="app.generateWithAI()" class="mt-auto w-full ai-gradient text-white font-bold py-3 rounded-lg shadow hover:opacity-90 transition flex justify-center items-center">
+                            <i class="fa-solid fa-bolt mr-2"></i> Buat Soal AI
+                        </button>
+                    </div>
+
+                    <!-- Manual Upload -->
+                    <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col">
+                        <div class="flex items-center mb-3 text-gray-700">
+                            <i class="fa-solid fa-file-arrow-up text-xl mr-2"></i>
+                            <h3 class="text-lg font-bold">Upload JSON</h3>
+                        </div>
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl flex-grow flex flex-col items-center justify-center p-4 bg-white relative hover:border-indigo-400 transition cursor-pointer">
+                            <input type="file" id="file-input" accept=".json" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="app.handleFile(this.files[0])">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-xs text-gray-500">Klik / Drop File JSON</p>
+                        </div>
+                        <button onclick="app.downloadTemplate()" class="mt-4 w-full bg-white border border-gray-300 text-gray-600 font-bold py-2 rounded-lg text-sm hover:bg-gray-100"><i class="fa-solid fa-download mr-1"></i> Template</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Quiz Setup -->
+            <div id="screen-setup-quiz" class="hidden max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg border-t-4 border-indigo-600">
+                <h2 class="text-2xl font-bold mb-2 text-center brand-font">Pengaturan</h2>
+                <p class="text-center text-indigo-600 font-bold mb-6 bg-indigo-50 py-2 rounded" id="question-count-display">0 Soal</p>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Timer (Opsional)</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="text-center"><input type="number" id="t-hours" placeholder="0" class="w-full p-2 border rounded text-center font-bold"><span class="text-[10px] uppercase text-gray-500">Jam</span></div>
+                        <div class="text-center"><input type="number" id="t-minutes" placeholder="0" class="w-full p-2 border rounded text-center font-bold"><span class="text-[10px] uppercase text-gray-500">Menit</span></div>
+                        <div class="text-center"><input type="number" id="t-seconds" placeholder="0" class="w-full p-2 border rounded text-center font-bold"><span class="text-[10px] uppercase text-gray-500">Detik</span></div>
+                    </div>
+                </div>
+                <button onclick="app.startQuiz()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg transition">Mulai Kuis</button>
+            </div>
+
+            <!-- 4. Quiz Play -->
+            <div id="screen-quiz" class="hidden max-w-3xl mx-auto">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div class="w-full bg-gray-200 h-1.5"><div id="quiz-progress" class="bg-indigo-600 h-1.5 transition-all duration-300" style="width: 0%"></div></div>
+                    <div class="p-8">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-xs font-bold text-gray-400 uppercase">Soal <span id="current-q-num">1</span>/<span id="total-q-num">10</span></span>
+                            <span class="bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded font-bold" id="score-live">Skor: 0</span>
+                        </div>
+                        <h3 id="question-text" class="text-xl md:text-2xl font-bold text-gray-800 mb-6 brand-font">Loading...</h3>
+                        <div id="options-container" class="space-y-3"></div>
+                    </div>
+                    <div class="bg-gray-50 px-8 py-4 border-t flex justify-between items-center">
+                        <button id="btn-ai-explain" onclick="app.explainWithAI()" class="hidden text-purple-600 text-sm font-bold hover:bg-purple-100 px-3 py-1 rounded transition border border-purple-200"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Penjelasan AI</button>
+                        <button id="btn-next-q" onclick="app.nextQuestion()" class="bg-gray-800 hover:bg-black text-white px-6 py-2 rounded-lg font-bold text-sm ml-auto hidden">Lanjut &rarr;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Flashcard Play -->
+            <div id="screen-flashcard" class="hidden max-w-xl mx-auto flex flex-col items-center min-h-[50vh] justify-center">
+                <div class="w-full text-center mb-4"><span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full" id="flashcard-counter">1 / 10</span></div>
+                <div class="perspective-1000 w-full h-80 cursor-pointer group" onclick="app.flipCard()">
+                    <div id="flashcard-inner" class="relative w-full h-full text-center transition-transform duration-500 transform-style-3d shadow-xl rounded-2xl">
+                        <div class="absolute w-full h-full backface-hidden bg-white border border-gray-200 rounded-2xl flex flex-col items-center justify-center p-6"><h3 id="fc-front" class="text-2xl font-bold text-gray-800 brand-font">?</h3><p class="text-xs text-gray-400 absolute bottom-4">Klik balik</p></div>
+                        <div class="absolute w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl flex flex-col items-center justify-center p-6"><h3 id="fc-back" class="text-2xl font-bold brand-font">!</h3></div>
+                    </div>
+                </div>
+                <div class="flex space-x-4 mt-8">
+                    <button onclick="app.prevFlashcard()" class="w-12 h-12 rounded-full bg-white shadow text-gray-600 hover:text-emerald-500 flex items-center justify-center"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button onclick="app.shuffleFlashcards()" class="px-4 bg-gray-200 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-300">Acak</button>
+                    <button onclick="app.nextFlashcard()" class="w-12 h-12 rounded-full bg-white shadow text-gray-600 hover:text-emerald-500 flex items-center justify-center"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- 6. Result -->
+            <div id="screen-result" class="hidden text-center pt-10">
+                <div class="bg-white p-10 rounded-3xl shadow-2xl max-w-md mx-auto">
+                    <i class="fa-solid fa-trophy text-6xl text-yellow-400 mb-4 block animate-bounce"></i>
+                    <h2 class="text-3xl font-bold mb-2 brand-font">Selesai!</h2>
+                    <div class="flex justify-center space-x-4 my-6">
+                        <div class="bg-indigo-50 p-3 rounded-xl w-24"><span class="block text-xs text-indigo-400 font-bold uppercase">Skor</span><span class="text-2xl font-bold text-indigo-700" id="res-score">0</span></div>
+                        <div class="bg-green-50 p-3 rounded-xl w-24"><span class="block text-xs text-green-400 font-bold uppercase">Benar</span><span class="text-2xl font-bold text-green-700" id="res-correct">0</span></div>
+                    </div>
+                    <button onclick="app.showScreen('home')" class="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-black">Main Lagi</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Overlay Loading -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex flex-col items-center justify-center backdrop-blur-sm text-white">
+        <div class="loader mb-4 border-t-white"></div>
+        <p id="loading-text" class="font-bold tracking-wide">AI Sedang Bekerja...</p>
+    </div>
+
+    <!-- Modal AI Explanation -->
+    <div id="modal-explanation" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl flex flex-col max-h-[80vh]">
+            <div class="bg-purple-600 p-4 text-white flex justify-between items-center rounded-t-2xl">
+                <h3 class="font-bold"><i class="fa-solid fa-robot mr-2"></i> Penjelasan AI</h3>
+                <button onclick="document.getElementById('modal-explanation').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto" id="explanation-content"></div>
+        </div>
+    </div>
+
+    <!-- Toast Error -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-red-600 text-white px-6 py-3 rounded-lg shadow-xl translate-y-20 opacity-0 transition-all z-50 font-bold text-sm flex items-center">
+        <i class="fa-solid fa-triangle-exclamation mr-2"></i> <span id="toast-msg">Error</span>
+    </div>
 
     <script>
-        // State Management
-        const state = {
-            ingredients: [],
-            favorites: loadFromLocalStorage('favorites') || [],
-            history: loadFromLocalStorage('history') || [],
-            spices: {}
+        const app = {
+            data: [], currentMode: null, currentIndex: 0, score: 0, timer: null, timerSeconds: 0,
+            apiKey: localStorage.getItem('gemini_api_key') || "", // Load from storage
+
+            init: function() {
+                this.showScreen('home');
+            },
+
+            // --- Settings & API Key ---
+            toggleSettings: function() {
+                const modal = document.getElementById('modal-settings');
+                modal.classList.toggle('hidden');
+                if(!modal.classList.contains('hidden')) {
+                    document.getElementById('input-api-key').value = this.apiKey;
+                    document.getElementById('api-status').innerText = "";
+                }
+            },
+            
+            toggleShowApiKey: function() {
+                const input = document.getElementById('input-api-key');
+                const icon = document.getElementById('icon-eye');
+                if(input.type === "password") {
+                    input.type = "text";
+                    icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash');
+                } else {
+                    input.type = "password";
+                    icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye');
+                }
+            },
+
+            saveApiKey: function() {
+                const key = document.getElementById('input-api-key').value.trim();
+                if(!key) {
+                    document.getElementById('api-status').innerText = "Key tidak boleh kosong!";
+                    document.getElementById('api-status').className = "text-xs text-center mt-3 text-red-500 font-bold";
+                    return;
+                }
+                this.apiKey = key;
+                localStorage.setItem('gemini_api_key', key);
+                document.getElementById('api-status').innerText = "Tersimpan! Silakan tutup menu ini.";
+                document.getElementById('api-status').className = "text-xs text-center mt-3 text-green-600 font-bold";
+                setTimeout(() => this.toggleSettings(), 1500);
+            },
+
+            // --- AI Logic ---
+            callGemini: async function(prompt) {
+                if(!this.apiKey) {
+                    this.toggleSettings();
+                    throw new Error("API Key belum disetting! Masukkan key di menu gerigi.");
+                }
+
+                // Using strict model name from instructions
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${this.apiKey}`;
+                
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        // Detailed error handling
+                        const errMsg = result.error?.message || "Gagal menghubungi AI";
+                        throw new Error(`API Error: ${errMsg}`);
+                    }
+
+                    return result.candidates[0].content.parts[0].text;
+                } catch (error) {
+                    console.error("Gemini Error:", error);
+                    throw error;
+                }
+            },
+
+            generateWithAI: async function() {
+                const topic = document.getElementById('ai-topic-input').value.trim();
+                if (!topic) return this.showToast("Topik tidak boleh kosong");
+
+                this.setLoading(true, "AI sedang membuat soal...");
+
+                try {
+                    let prompt = "";
+                    if (this.currentMode === 'quiz') {
+                        prompt = `Buatkan 10 soal kuis pilihan ganda tentang topik "${topic}" dalam Bahasa Indonesia. 
+                        Output wajib JSON murni tanpa markdown. Format: 
+                        [{"question": "Pertanyaan?", "options": ["A", "B", "C", "D"], "answer": "Jawaban Benar (harus sama persis dengan salah satu opsi)"}]`;
+                    } else {
+                        prompt = `Buatkan 10 flashcard tentang topik "${topic}" dalam Bahasa Indonesia. 
+                        Output wajib JSON murni tanpa markdown. Format: 
+                        [{"question": "Depan", "answer": "Belakang"}]`;
+                    }
+
+                    let text = await this.callGemini(prompt);
+                    // Cleaning markdown blocks usually returned by LLMs
+                    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                    
+                    const json = JSON.parse(text);
+                    this.data = json;
+
+                    document.getElementById('ai-topic-input').value = ""; // Clear
+                    
+                    if (this.currentMode === 'quiz') {
+                        document.getElementById('question-count-display').innerText = `${this.data.length} Soal AI`;
+                        this.showScreen('setup-quiz');
+                    } else {
+                        this.startFlashcard();
+                    }
+                } catch (e) {
+                    this.showToast(e.message);
+                } finally {
+                    this.setLoading(false);
+                }
+            },
+
+            explainWithAI: async function() {
+                const q = this.data[this.currentIndex];
+                const modal = document.getElementById('modal-explanation');
+                const content = document.getElementById('explanation-content');
+                
+                modal.classList.remove('hidden');
+                content.innerHTML = '<div class="text-center py-10"><div class="loader mx-auto border-purple-600"></div><p class="mt-4 text-gray-500">Menganalisis jawaban...</p></div>';
+
+                try {
+                    const prompt = `Jelaskan singkat padat (maks 2 paragraf) kenapa jawaban untuk "${q.question}" adalah "${q.answer}". Bahasa Indonesia.`;
+                    const text = await this.callGemini(prompt);
+                    content.innerHTML = marked.parse(text);
+                } catch (e) {
+                    content.innerHTML = `<p class="text-red-500 text-center font-bold">${e.message}</p>`;
+                }
+            },
+
+            // --- Navigation & Core ---
+            showScreen: function(id) {
+                document.querySelectorAll('[id^="screen-"]').forEach(el => el.classList.add('hidden'));
+                document.getElementById('screen-' + id).classList.remove('hidden');
+                const controls = document.getElementById('header-controls');
+                if(id === 'home') { controls.classList.add('hidden'); this.stopTimer(); }
+                else controls.classList.remove('hidden');
+            },
+
+            selectMode: function(mode) { this.currentMode = mode; this.showScreen('upload'); },
+            
+            setLoading: function(show, text) {
+                const el = document.getElementById('loading-overlay');
+                if(show) { el.classList.remove('hidden'); if(text) document.getElementById('loading-text').innerText = text; } 
+                else el.classList.add('hidden');
+            },
+
+            showToast: function(msg) {
+                const t = document.getElementById('toast');
+                document.getElementById('toast-msg').innerText = msg;
+                t.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => t.classList.add('translate-y-20', 'opacity-0'), 4000);
+            },
+
+            // --- File & Quiz Logic (Simplified for brevity as core logic is same) ---
+            handleFile: function(file) {
+                if(!file) return;
+                const r = new FileReader();
+                r.onload = (e) => {
+                    try {
+                        this.data = JSON.parse(e.target.result);
+                        if(this.currentMode === 'quiz') {
+                            document.getElementById('question-count-display').innerText = `${this.data.length} Soal Upload`;
+                            this.showScreen('setup-quiz');
+                        } else this.startFlashcard();
+                    } catch(err) { this.showToast("File JSON Rusak"); }
+                };
+                r.readAsText(file);
+            },
+            
+            downloadTemplate: function() {
+                const t = [{"question":"Contoh Soal?","options":["A","B","C","D"],"answer":"A"}];
+                const a = document.createElement('a');
+                a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(t));
+                a.download = "template.json"; document.body.appendChild(a); a.click(); a.remove();
+            },
+
+            startQuiz: function() {
+                const h = parseInt(document.getElementById('t-hours').value)||0, m = parseInt(document.getElementById('t-minutes').value)||0, s = parseInt(document.getElementById('t-seconds').value)||0;
+                this.timerSeconds = (h*3600)+(m*60)+s;
+                this.currentIndex=0; this.score=0;
+                document.getElementById('score-live').innerText="Skor: 0";
+                this.showScreen('quiz');
+                if(this.timerSeconds > 0) {
+                    document.getElementById('timer-display').classList.remove('hidden');
+                    this.timer = setInterval(() => {
+                        this.timerSeconds--;
+                        const dh=Math.floor(this.timerSeconds/3600), dm=Math.floor((this.timerSeconds%3600)/60), ds=this.timerSeconds%60;
+                        document.getElementById('time-value').innerText = `${dh}:${dm.toString().padStart(2,'0')}:${ds.toString().padStart(2,'0')}`;
+                        if(this.timerSeconds<=0) { clearInterval(this.timer); this.finishQuiz(); }
+                    }, 1000);
+                } else document.getElementById('timer-display').classList.add('hidden');
+                this.renderQuestion();
+            },
+
+            renderQuestion: function() {
+                const q = this.data[this.currentIndex];
+                document.getElementById('current-q-num').innerText = this.currentIndex+1;
+                document.getElementById('total-q-num').innerText = this.data.length;
+                document.getElementById('quiz-progress').style.width = `${((this.currentIndex+1)/this.data.length)*100}%`;
+                document.getElementById('question-text').innerText = q.question;
+                
+                const c = document.getElementById('options-container'); c.innerHTML='';
+                document.getElementById('btn-next-q').classList.add('hidden');
+                document.getElementById('btn-ai-explain').classList.add('hidden');
+
+                q.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-4 border border-gray-200 rounded-xl hover:bg-indigo-50 transition flex items-center group";
+                    btn.onclick = () => this.checkAnswer(btn, opt, q.answer);
+                    btn.innerHTML = `<span class="w-8 h-8 rounded bg-gray-100 text-gray-500 flex items-center justify-center mr-3 font-bold group-hover:bg-indigo-500 group-hover:text-white transition">${"ABCD"[idx]}</span> ${opt}`;
+                    c.appendChild(btn);
+                });
+            },
+
+            checkAnswer: function(btn, sel, corr) {
+                document.querySelectorAll('#options-container button').forEach(b => b.disabled=true);
+                if(sel===corr) {
+                    this.score+=10; btn.className = "w-full text-left p-4 border border-green-500 bg-green-50 rounded-xl flex items-center";
+                    document.getElementById('score-live').innerText = "Skor: "+this.score;
+                } else {
+                    btn.className = "w-full text-left p-4 border border-red-500 bg-red-50 rounded-xl flex items-center";
+                }
+                document.getElementById('btn-next-q').classList.remove('hidden');
+                document.getElementById('btn-ai-explain').classList.remove('hidden');
+            },
+
+            nextQuestion: function() {
+                if(++this.currentIndex < this.data.length) this.renderQuestion();
+                else this.finishQuiz();
+            },
+            
+            stopTimer: function() { if(this.timer) clearInterval(this.timer); },
+            finishQuiz: function() {
+                this.stopTimer(); this.showScreen('result');
+                document.getElementById('res-score').innerText = this.score;
+                document.getElementById('res-correct').innerText = this.score/10;
+            },
+
+            startFlashcard: function() { this.currentIndex=0; this.showScreen('flashcard'); this.renderFlashcard(); },
+            renderFlashcard: function() {
+                const c = this.data[this.currentIndex];
+                document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+                setTimeout(() => {
+                    document.getElementById('fc-front').innerText = c.question;
+                    document.getElementById('fc-back').innerText = c.answer;
+                    document.getElementById('flashcard-counter').innerText = `${this.currentIndex+1}/${this.data.length}`;
+                }, 200);
+            },
+            flipCard: function() { document.getElementById('flashcard-inner').classList.toggle('rotate-y-180'); },
+            nextFlashcard: function() { if(this.currentIndex<this.data.length-1) {this.currentIndex++; this.renderFlashcard();} },
+            prevFlashcard: function() { if(this.currentIndex>0) {this.currentIndex--; this.renderFlashcard();} },
+            shuffleFlashcards: function() { 
+                this.data.sort(() => Math.random() - 0.5); 
+                this.currentIndex=0; this.renderFlashcard(); 
+                this.showToast("Kartu Diacak!");
+            }
         };
 
-        // Initialize spice selections from localStorage
-        function initializeSpices() {
-            const savedSpices = loadFromLocalStorage('spices');
-            if (savedSpices) {
-                Object.keys(savedSpices).forEach(key => {
-                    const element = document.getElementById(key);
-                    if (element) element.checked = savedSpices[key];
-                });
-            }
-        }
-
-        // LocalStorage Helpers
-        function saveToLocalStorage(key, value) {
-            try {
-                localStorage.setItem(key, JSON.stringify(value));
-            } catch (e) {
-                console.warn('LocalStorage error:', e);
-            }
-        }
-
-        function loadFromLocalStorage(key) {
-            try {
-                return JSON.parse(localStorage.getItem(key));
-            } catch (e) {
-                return null;
-            }
-        }
-
-        // Unit Conversion
-        const unitConversion = {
-            'butir': 50,
-            'ikat': 200,
-            'potong': 100,
-            'sendok makan': 15,
-            'cangkir': 240,
-            'gram': 1,
-            'ml': 1
-        };
-
-        function convertToGrams(amount, unit) {
-            return amount * (unitConversion[unit] || 1);
-        }
-
-        // Input Validation
-        function validateIngredient() {
-            const name = document.getElementById('ingredientName').value.trim();
-            const amount = parseFloat(document.getElementById('ingredientAmount').value);
-            const unit = document.getElementById('ingredientUnit').value;
-            const category = document.getElementById('ingredientCategory').value;
-
-            let isValid = true;
-            const errors = { name: '', amount: '', unit: '', category: '' };
-
-            if (!name || name.length < 2 || name.length > 50) {
-                errors.name = 'Nama bahan harus 2-50 karakter';
-                isValid = false;
-            }
-
-            if (!amount || amount < 0.1 || amount > 10000) {
-                errors.amount = 'Jumlah harus 0.1-10000';
-                isValid = false;
-            }
-
-            if (!unit) {
-                errors.unit = 'Pilih unit';
-                isValid = false;
-            }
-
-            if (!category) {
-                errors.category = 'Pilih kategori';
-                isValid = false;
-            }
-
-            if (state.ingredients.some(ing => ing.name.toLowerCase() === name.toLowerCase())) {
-                errors.name = 'Bahan sudah ditambahkan';
-                isValid = false;
-            }
-
-            showErrors(errors);
-            return isValid;
-        }
-
-        function showErrors(errors) {
-            Object.keys(errors).forEach(field => {
-                const errorEl = document.getElementById(`${field}Error`);
-                if (errorEl) {
-                    if (errors[field]) {
-                        errorEl.textContent = errors[field];
-                        errorEl.classList.add('show');
-                        document.getElementById(`ingredient${field.charAt(0).toUpperCase() + field.slice(1)}`).classList.add('error');
-                    } else {
-                        errorEl.classList.remove('show');
-                        document.getElementById(`ingredient${field.charAt(0).toUpperCase() + field.slice(1)}`).classList.remove('error');
-                    }
-                }
-            });
-        }
-
-        // Add Ingredient
-        function addIngredient() {
-            if (!validateIngredient()) return;
-
-            const name = document.getElementById('ingredientName').value.trim();
-            const amount = parseFloat(document.getElementById('ingredientAmount').value);
-            const unit = document.getElementById('ingredientUnit').value;
-            const category = document.getElementById('ingredientCategory').value;
-
-            state.ingredients.push({ name, amount, unit, category, grams: convertToGrams(amount, unit) });
-            
-            clearIngredientForm();
-            renderTags();
-            document.getElementById('ingredientName').focus();
-        }
-
-        function clearIngredientForm() {
-            document.getElementById('ingredientName').value = '';
-            document.getElementById('ingredientAmount').value = '';
-            document.getElementById('ingredientUnit').value = '';
-            document.getElementById('ingredientCategory').value = '';
-            showErrors({ name: '', amount: '', unit: '', category: '' });
-        }
-
-        function removeIngredient(index) {
-            state.ingredients.splice(index, 1);
-            renderTags();
-        }
-
-        function renderTags() {
-            const container = document.getElementById('ingredientTags');
-            container.innerHTML = state.ingredients.map((ing, idx) => `
-                <div class="tag">
-                    🔹 ${escapeHtml(ing.name)} (${ing.amount} ${ing.unit}) - ${ing.category}
-                    <button type="button" onclick="removeIngredient(${idx})">✕</button>
-                </div>
-            `).join('');
-        }
-
-        // Get Available Spices
-        function getAvailableSpices() {
-            const spices = [];
-            const spiceMap = {
-                'bumbu-garam': 'Garam',
-                'bumbu-gula': 'Gula',
-                'bumbu-merica': 'Merica',
-                'bumbu-minyak': 'Minyak Goreng',
-                'bumbu-kecap': 'Kecap Manis',
-                'bumbu-bawang-putih': 'Bawang Putih',
-                'bumbu-bawang-merah': 'Bawang Merah',
-                'bumbu-cabai': 'Cabai',
-                'bumbu-santan': 'Santan',
-                'bumbu-kemiri': 'Kemiri',
-                'bumbu-kunyit': 'Kunyit',
-                'bumbu-jahe': 'Jahe'
-            };
-
-            Object.keys(spiceMap).forEach(id => {
-                if (document.getElementById(id).checked) {
-                    spices.push(spiceMap[id]);
-                }
-            });
-
-            // Save spices to localStorage
-            const spiceCheckboxes = {};
-            Object.keys(spiceMap).forEach(id => {
-                spiceCheckboxes[id] = document.getElementById(id).checked;
-            });
-            saveToLocalStorage('spices', spiceCheckboxes);
-
-            return spices;
-        }
-
-        // Build Prompt
-        function buildPrompt() {
-            if (state.ingredients.length < 2) {
-                showMessage('Tambahkan minimal 2 bahan untuk membuat resep', 'error');
-                return null;
-            }
-
-            const ingredients = state.ingredients.map(ing => 
-                `${ing.name} (${ing.amount} ${ing.unit})`
-            ).join(', ');
-
-            const spices = getAvailableSpices();
-            const allergies = document.getElementById('allergies').value.trim();
-            const spiceLevel = document.getElementById('spiceLevel').value;
-            const cookingMethod = document.getElementById('cookingMethod').value;
-            const maxTime = document.getElementById('maxTime').value;
-            const difficulty = document.getElementById('difficulty').value;
-
-            const prompt = `Kamu adalah chef profesional Indonesia. Generate 2-3 resep berbeda menggunakan bahan-bahan berikut:
-
-BAHAN UTAMA:
-${ingredients}
-
-BUMBU YANG TERSEDIA:
-${spices.join(', ') || 'Hanya bumbu dasar (garam, gula, minyak)'}
-
-PREFERENSI:
-- Tingkat Pedas: ${spiceLevel}
-- Metode Masak: ${cookingMethod}
-- Waktu Maksimal: ${maxTime} menit
-- Tingkat Kesulitan: ${difficulty}
-${allergies ? `- Hindari: ${allergies}` : ''}
-
-INSTRUKSI:
-1. Gunakan SEMUA bahan yang disebutkan sebagai bahan utama
-2. Setiap resep harus berbeda metode masak jika memungkinkan
-3. Respons HARUS dalam format JSON MURNI (bukan teks biasa), dengan struktur:
-{
-  "recipes": [
-    {
-      "name": "Nama Resep",
-      "time": "XX menit",
-      "difficulty": "Mudah/Sedang/Sulit",
-      "spiceLevel": 1-5,
-      "cookingMethod": "Metode",
-      "ingredients": ["Bahan 1", "Bahan 2"],
-      "spices": ["Bumbu 1", "Bumbu 2"],
-      "steps": ["Langkah 1", "Langkah 2"],
-      "tips": "Tips masakan",
-      "warnings": "Jika ada bahan kurang"
-    }
-  ]
-}
-
-Pastikan JSON valid dan dapat di-parse!`;
-
-            return prompt;
-        }
-
-        // Generate Recipes with DeepSeek API
-        async function generateRecipes() {
-            const prompt = buildPrompt();
-            if (!prompt) return;
-
-            const generateBtn = document.getElementById('generateBtn');
-            generateBtn.disabled = true;
-
-            showLoading();
-
-            try {
-                const response = await fetch('https://api.deepseek.com/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer sk-0dec28d74d954d26b8c56d3841a54d6f'
-                    },
-                    body: JSON.stringify({
-                        model: 'deepseek-chat',
-                        messages: [
-                            {
-                                role: 'system',
-                                content: 'Kamu adalah chef profesional Indonesia yang ahli dalam memasak. Selalu respons dalam format JSON yang valid dan dapat di-parse.'
-                            },
-                            {
-                                role: 'user',
-                                content: prompt
-                            }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 2000
-                    })
-                });
-
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        throw new Error('❌ API Key tidak valid atau tidak terotorisasi');
-                    } else if (response.status === 429) {
-                        throw new Error('⏱️ Terlalu banyak permintaan. Coba lagi dalam beberapa detik');
-                    } else if (response.status === 500) {
-                        throw new Error('❌ Server DeepSeek sedang bermasalah. Coba lagi nanti');
-                    } else {
-                        throw new Error(`Gagal menghubungi server: ${response.status}`);
-                    }
-                }
-
-                const data = await response.json();
-
-                if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-                    throw new Error('❌ Respons API tidak valid');
-                }
-
-                let content = data.choices[0].message.content.trim();
-                
-                // Extract JSON from content
-                const jsonMatch = content.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) {
-                    throw new Error('❌ Respons bukan format JSON. Silakan coba lagi.');
-                }
-
-                const recipes = JSON.parse(jsonMatch[0]);
-
-                if (!recipes.recipes || !Array.isArray(recipes.recipes)) {
-                    throw new Error('❌ Format resep tidak sesuai');
-                }
-
-                renderRecipes(recipes.recipes);
-                
-                // Save to history
-                state.history.unshift({
-                    ingredients: state.ingredients,
-                    recipes: recipes.recipes,
-                    timestamp: new Date().toLocaleString('id-ID')
-                });
-                if (state.history.length > 10) state.history.pop();
-                saveToLocalStorage('history', state.history);
-
-                showMessage('✅ Resep berhasil dibuat!', 'success');
-
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage(error.message, 'error');
-                document.getElementById('recipesContainer').innerHTML = `
-                    <div class="empty-state">
-                        <p>⚠️ ${escapeHtml(error.message)}</p>
-                    </div>
-                `;
-            } finally {
-                generateBtn.disabled = false;
-            }
-        }
-
-        // Render Recipes
-        function renderRecipes(recipes) {
-            const container = document.getElementById('recipesContainer');
-            container.innerHTML = recipes.map((recipe, idx) => `
-                <div class="recipe-card">
-                    <div class="recipe-header">
-                        <div class="recipe-title">${escapeHtml(recipe.name)}</div>
-                        <div class="recipe-badges">
-                            <span class="badge">⏱️ ${escapeHtml(recipe.time)}</span>
-                            <span class="badge">${getDifficultyBadge(recipe.difficulty)}</span>
-                            <span class="badge">🔥 Level ${recipe.spiceLevel}/5</span>
-                        </div>
-                    </div>
-                    <div class="recipe-body">
-                        <div class="recipe-section">
-                            <h4>Bahan Utama</h4>
-                            <ul>
-                                ${(recipe.ingredients || []).map(ing => `<li>${escapeHtml(ing)}</li>`).join('')}
-                            </ul>
-                        </div>
-
-                        ${recipe.spices && recipe.spices.length > 0 ? `
-                            <div class="recipe-section">
-                                <h4>Bumbu</h4>
-                                <ul>
-                                    ${recipe.spices.map(sp => `<li>${escapeHtml(sp)}</li>`).join('')}
-                                </ul>
-                            </div>
-                        ` : ''}
-
-                        <div class="recipe-section">
-                            <h4>Cara Memasak</h4>
-                            <ol>
-                                ${(recipe.steps || []).map(step => `<li>${escapeHtml(step)}</li>`).join('')}
-                            </ol>
-                        </div>
-
-                        ${recipe.tips ? `
-                            <div class="tips-box">
-                                <strong>💡 Tips:</strong> ${escapeHtml(recipe.tips)}
-                            </div>
-                        ` : ''}
-
-                        ${recipe.warnings ? `
-                            <div class="warning-box">
-                                <strong>⚠️ Perhatian:</strong> ${escapeHtml(recipe.warnings)}
-                            </div>
-                        ` : ''}
-                    </div>
-                    <div class="recipe-footer">
-                        <button onclick="saveRecipe(${idx}, '${escapeHtml(recipe.name).replace(/'/g, "\\'")}')">⭐ Simpan</button>
-                        <button onclick="copyIngredients(${idx})">📋 Copy</button>
-                        <button onclick="shareRecipe('${escapeHtml(recipe.name).replace(/'/g, "\\'")}')" >🔗 Share</button>
-                        <button onclick="printRecipe(${idx}, '${escapeHtml(recipe.name).replace(/'/g, "\\'")}')" >🖨️ Print</button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function getDifficultyBadge(difficulty) {
-            const badges = {
-                'Mudah': '🟢 Mudah',
-                'Sedang': '🟡 Sedang',
-                'Sulit': '🔴 Sulit'
-            };
-            return badges[difficulty] || difficulty;
-        }
-
-        function saveRecipe(idx, name) {
-            const container = document.getElementById('recipesContainer');
-            const recipe = container.querySelector(`.recipe-card:nth-child(${idx + 1})`);
-            const content = recipe.innerHTML;
-            
-            state.favorites.push({ name, content, timestamp: new Date().toLocaleString('id-ID') });
-            saveToLocalStorage('favorites', state.favorites);
-            showMessage('✅ Resep disimpan ke favorit!', 'success');
-        }
-
-        function copyIngredients(idx) {
-            const container = document.getElementById('recipesContainer');
-            const recipe = container.querySelector(`.recipe-card:nth-child(${idx + 1})`);
-            const ingredients = Array.from(recipe.querySelectorAll('.recipe-section:first-child ul li'))
-                .map(li => li.textContent)
-                .join('\n');
-            
-            navigator.clipboard.writeText(ingredients).then(() => {
-                showMessage('📋 Daftar bahan disalin!', 'success');
-            });
-        }
-
-        function shareRecipe(name) {
-            const text = `Cek resep "${name}" dari Smart Leftover Chef! 🍳`;
-            const url = window.location.href;
-            
-            if (navigator.share) {
-                navigator.share({ title: 'Smart Leftover Chef', text, url });
-            } else {
-                navigator.clipboard.writeText(`${text}\n${url}`);
-                showMessage('🔗 Link resep disalin!', 'success');
-            }
-        }
-
-        function printRecipe(idx, name) {
-            const container = document.getElementById('recipesContainer');
-            const recipe = container.querySelector(`.recipe-card:nth-child(${idx + 1})`);
-            const printWindow = window.open('', '', 'height=600,width=800');
-            printWindow.document.write(`
-                <html><head><title>${name}</title>
-                <style>
-                    body { font-family: Arial; line-height: 1.6; margin: 20px; }
-                    h1, h2 { color: #FF9F43; }
-                    ul, ol { margin: 10px 0; }
-                    li { margin: 5px 0; }
-                </style></head><body>
-                <h1>${name}</h1>
-                ${recipe.innerHTML}
-                </body></html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
-        }
-
-        function showLoading() {
-            document.getElementById('recipesContainer').innerHTML = `
-                <div class="loading-container" style="grid-column: 1/-1;">
-                    <div class="loading-animation">
-                        <span class="cooking-icon">🍳</span>
-                        <span class="cooking-icon">🔪</span>
-                    </div>
-                    <p style="color: var(--text-light); font-size: 1.1em;">Koki sedang merancik resep spesial...</p>
-                    <div class="progress-bar"><div class="progress-fill"></div></div>
-                </div>
-            `;
-        }
-
-        function showMessage(msg, type) {
-            const msgEl = document.getElementById('successMessage');
-            msgEl.textContent = msg;
-            msgEl.className = `success-message show`;
-            if (type === 'error') msgEl.style.borderLeftColor = 'var(--danger)';
-            if (type === 'error') msgEl.style.color = 'var(--danger)';
-            if (type === 'error') msgEl.style.backgroundColor = 'rgba(231, 76, 60, 0.1)';
-            
-            setTimeout(() => msgEl.classList.remove('show'), 5000);
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Event Listeners
-        document.getElementById('ingredientName').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('ingredientAmount').focus();
-            }
-        });
-
-        document.getElementById('ingredientAmount').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('ingredientUnit').focus();
-            }
-        });
-
-        document.getElementById('ingredientUnit').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                document.getElementById('ingredientCategory').focus();
-            }
-        });
-
-        document.getElementById('ingredientCategory').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addIngredient();
-            }
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                generateRecipes();
-            }
-        });
-
-        // Initialize
-        initializeSpices();
+        window.onload = () => app.init();
     </script>
 </body>
 </html>
