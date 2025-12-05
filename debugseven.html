@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Leftover Chef - Fixed</title>
+    <style>
+        /* --- CSS SAMA SEPERTI SEBELUMNYA DENGAN TAMBAHAN --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #FF9F43;
+            --success: #2DCC71;
+            --warning: #F39C12;
+            --danger: #E74C3C;
+            --secondary: #95A5A6;
+            --bg-light: #FFFFFF;
+            --bg-dark: #F5F5F5;
+            --text-dark: #2C3E50;
+            --text-light: #7F8C8D;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-dark); color: var(--text-dark); line-height: 1.6; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, #FF8C1A 100%);
+            color: white; padding: 30px 0; text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; position: relative;
+        }
+        
+        /* New: API Key Settings Button */
+        .settings-btn {
+            position: absolute; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.2); border: 1px solid white;
+            color: white; padding: 8px 15px; border-radius: 20px;
+            cursor: pointer; font-size: 0.9em; transition: 0.3s;
+        }
+        .settings-btn:hover { background: white; color: var(--primary); }
+
+        .main-grid { display: grid; grid-template-columns: 40% 60%; gap: 30px; margin-bottom: 40px; }
+        .panel { background: var(--bg-light); border-radius: 12px; padding: 30px; box-shadow: 0 2px 15px rgba(0,0,0,0.08); }
+        .panel h2 { font-size: 1.5em; margin-bottom: 20px; color: var(--primary); border-bottom: 3px solid var(--primary); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Form Styles */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.95em; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #E0E0E0; border-radius: 8px; font-size: 1em; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 159, 67, 0.1); }
+        
+        /* Tags */
+        .ingredient-tags { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; min-height: 30px; }
+        .tag { background: linear-gradient(135deg, var(--primary) 0%, #FF8C1A 100%); color: white; padding: 8px 12px; border-radius: 20px; display: flex; align-items: center; gap: 8px; font-size: 0.9em; }
+        .tag button { background: rgba(255,255,255,0.3); border: none; color: white; cursor: pointer; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+
+        /* Grid inputs */
+        .input-row { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; }
+        
+        /* Checkboxes */
+        .checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; }
+        input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary); }
+
+        /* Buttons */
+        .button-group { display: flex; gap: 10px; margin-top: 25px; }
+        button.btn-primary { background: linear-gradient(135deg, var(--primary) 0%, #FF8C1A 100%); color: white; flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        button.btn-secondary { background: var(--secondary); color: white; padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; }
+        
+        /* Recipe Cards */
+        .recipes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .recipe-card { background: var(--bg-light); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 15px rgba(0,0,0,0.08); display: flex; flex-direction: column; transition: transform 0.3s; }
+        .recipe-card:hover { transform: translateY(-5px); }
+        .recipe-header { background: linear-gradient(135deg, var(--primary) 0%, #FF8C1A 100%); color: white; padding: 20px; }
+        .recipe-title { font-weight: bold; font-size: 1.2em; margin-bottom: 5px; }
+        .recipe-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+        .badge { background: rgba(255,255,255,0.3); padding: 4px 8px; border-radius: 12px; font-size: 0.8em; }
+        .recipe-body { padding: 20px; flex: 1; overflow-y: auto; max-height: 400px; }
+        .recipe-section { margin-bottom: 15px; }
+        .recipe-section h4 { color: var(--primary); font-size: 0.9em; text-transform: uppercase; margin-bottom: 5px; }
+        .recipe-section ul, .recipe-section ol { margin-left: 20px; font-size: 0.95em; }
+        .recipe-footer { padding: 15px; border-top: 1px solid #eee; display: flex; gap: 5px; }
+        .recipe-footer button { flex: 1; padding: 8px; border: 1px solid var(--primary); background: white; color: var(--primary); border-radius: 4px; cursor: pointer; font-size: 0.85em; }
+        .recipe-footer button:hover { background: var(--primary); color: white; }
+
+        /* Loading & Errors */
+        .loading-container { text-align: center; padding: 40px; width: 100%; grid-column: 1/-1; }
+        .error-message { color: var(--danger); font-size: 0.9em; margin-top: 5px; display: none; }
+        .error-message.show { display: block; }
+        .success-message { background: rgba(45, 204, 113, 0.1); border-left: 4px solid var(--success); padding: 10px; border-radius: 4px; display: none; margin-bottom: 15px; }
+        .success-message.show { display: block; }
+
+        /* Modals */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 5px 30px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { margin: 0; }
+        .close-btn { cursor: pointer; font-size: 1.5em; border: none; background: none; }
+
+        @media (max-width: 768px) { .main-grid { grid-template-columns: 1fr; } .input-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🍳 Smart Leftover Chef</h1>
+        <p>Ubah sisa bahan menjadi hidangan lezat dengan bantuan AI</p>
+        <button class="settings-btn" onclick="openApiKeyModal()">⚙️ Set API Key</button>
+    </header>
+
+    <div class="container">
+        <div class="main-grid">
+            <div class="panel">
+                <h2>📝 Bahan Anda</h2>
+                <div id="statusMessage" class="success-message"></div>
+
+                <div class="form-group">
+                    <label>Nama Bahan</label>
+                    <input type="text" id="ingredientName" placeholder="Contoh: Telur, Nasi Sisa" maxlength="50">
+                    <div class="error-message" id="nameError"></div>
+                </div>
+
+                <div class="input-row">
+                    <div class="form-group">
+                        <label>Berat/Jumlah</label>
+                        <input type="number" id="ingredientAmount" placeholder="1" min="0.1" step="0.1">
+                        <div class="error-message" id="amountError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit</label>
+                        <select id="ingredientUnit">
+                            <option value="gram">gram</option>
+                            <option value="ml">ml</option>
+                            <option value="butir">butir</option>
+                            <option value="piring">piring</option>
+                            <option value="potong">potong</option>
+                            <option value="sdm">sdm</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select id="ingredientCategory">
+                            <option value="Umum">Umum</option>
+                            <option value="Protein">Protein</option>
+                            <option value="Sayur">Sayur</option>
+                            <option value="Karbo">Karbo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-secondary" onclick="addIngredient()" style="width:100%; margin-bottom: 20px;">+ Tambah Bahan</button>
+                <div class="ingredient-tags" id="ingredientTags"></div>
+
+                <h2 style="margin-top: 30px;">🌶️ Bumbu Tersedia</h2>
+                <div class="checkbox-group">
+                    <div class="checkbox-item"><input type="checkbox" id="bumbu-garam" checked><label>Garam</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="bumbu-gula" checked><label>Gula</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="bumbu-minyak" checked><label>Minyak</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="bumbu-bawang-putih" checked><label>Bawang Putih</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="bumbu-bawang-merah" checked><label>Bawang Merah</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="bumbu-cabai"><label>Cabai</label></div>
+                    <div class="checkbox-item"><input type="checkbox" id="bumbu-kecap"><label>Kecap</label></div>
+                </div>
+
+                <h2 style="margin-top: 30px;">⚙️ Preferensi</h2>
+                <div class="form-group">
+                    <label>Gaya Masakan</label>
+                    <select id="cuisineStyle">
+                        <option value="Indonesia Rumahan">Indonesia Rumahan</option>
+                        <option value="Chinese Food">Chinese Food</option>
+                        <option value="Western Simple">Western Simple</option>
+                        <option value="Jepang">Jepang</option>
+                    </select>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" id="generateBtn" onclick="generateRecipes()">🍳 Masak Sekarang!</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>
+                    👨‍🍳 Resep Anda
+                    <button class="btn-secondary" onclick="openFavorites()">❤️ Lihat Favorit</button>
+                </h2>
+                <div id="recipesContainer" class="recipes-grid">
+                    <div style="text-align: center; padding: 40px; color: #999; grid-column: 1/-1;">
+                        <p>Masukkan API Key di tombol ⚙️ pojok kanan atas,<br>lalu masukkan bahan untuk memulai!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="apiKeyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔑 Konfigurasi API</h3>
+                <button class="close-btn" onclick="closeModal('apiKeyModal')">&times;</button>
+            </div>
+            <p style="margin-bottom: 15px; font-size: 0.9em; color: #666;">
+                Masukkan API Key DeepSeek Anda. Key disimpan secara lokal di browser Anda.
+                <br><em>Dapatkan key di: platform.deepseek.com</em>
+            </p>
+            <div class="form-group">
+                <input type="password" id="userApiKey" placeholder="sk-..." onchange="saveApiKey()">
+            </div>
+            <div style="background: #fff3cd; padding: 10px; border-radius: 6px; font-size: 0.85em; color: #856404;">
+                ⚠️ <strong>Info Penting:</strong> Jika tombol "Masak" tidak merespon, browser Anda mungkin memblokir koneksi langsung (CORS). Anda mungkin perlu menggunakan ekstensi browser "Allow CORS" untuk testing lokal.
+            </div>
+            <button class="btn-primary" style="width:100%; margin-top:15px;" onclick="saveApiKey()">Simpan & Tutup</button>
+        </div>
+    </div>
+
+    <div class="modal" id="favoritesModal">
+        <div class="modal-content" style="max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3>❤️ Resep Favorit Disimpan</h3>
+                <button class="close-btn" onclick="closeModal('favoritesModal')">&times;</button>
+            </div>
+            <div id="favoritesList" style="overflow-y: auto; flex: 1;">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // --- STATE MANAGEMENT ---
+        const state = {
+            ingredients: [],
+            recipes: []
+        };
+
+        // --- API KEY MANAGEMENT ---
+        function openApiKeyModal() {
+            document.getElementById('userApiKey').value = localStorage.getItem('deepseek_key') || '';
+            document.getElementById('apiKeyModal').classList.add('active');
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('userApiKey').value.trim();
+            if(key) {
+                localStorage.setItem('deepseek_key', key);
+                showMessage('API Key berhasil disimpan!', 'success');
+                closeModal('apiKeyModal');
+            }
+        }
+
+        function getApiKey() {
+            return localStorage.getItem('deepseek_key');
+        }
+
+        // --- INGREDIENT LOGIC ---
+        function addIngredient() {
+            const name = document.getElementById('ingredientName').value.trim();
+            const amount = document.getElementById('ingredientAmount').value;
+            const unit = document.getElementById('ingredientUnit').value;
+            const category = document.getElementById('ingredientCategory').value;
+
+            if (!name) return showMessage('Nama bahan wajib diisi', 'error');
+
+            state.ingredients.push({ name, amount, unit, category });
+            renderTags();
+            
+            // Reset input
+            document.getElementById('ingredientName').value = '';
+            document.getElementById('ingredientAmount').value = '';
+            document.getElementById('ingredientName').focus();
+        }
+
+        function removeIngredient(index) {
+            state.ingredients.splice(index, 1);
+            renderTags();
+        }
+
+        function renderTags() {
+            const container = document.getElementById('ingredientTags');
+            container.innerHTML = state.ingredients.map((ing, idx) => `
+                <div class="tag">
+                    ${ing.name} (${ing.amount || 'Secukupnya'} ${ing.unit})
+                    <button onclick="removeIngredient(${idx})">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        // --- GENERATION LOGIC ---
+        async function generateRecipes() {
+            const apiKey = getApiKey();
+            if (!apiKey) {
+                openApiKeyModal();
+                return showMessage('Harap masukkan API Key terlebih dahulu', 'error');
+            }
+
+            if (state.ingredients.length === 0) {
+                return showMessage('Masukkan minimal 1 bahan!', 'error');
+            }
+
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.textContent = '🔥 Sedang Meracik...';
+            
+            showLoading();
+
+            const prompt = buildPrompt();
+
+            try {
+                // Catatan: Menggunakan fetch langsung dari browser ke DeepSeek sering kena CORS
+                // Solusi ideal adalah menggunakan Backend Proxy, tapi untuk file HTML ini
+                // kita coba direct call dengan penanganan error.
+                
+                const response = await fetch('https://api.deepseek.com/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [
+                            { role: 'system', content: 'You are a helpful chef assistant. Output JSON only.' },
+                            { role: 'user', content: prompt }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1500
+                    })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error?.message || `Error ${response.status}: Periksa API Key atau CORS.`);
+                }
+
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+                
+                // Parse JSON dengan pembersih Markdown
+                const recipes = parseResponse(content);
+                renderRecipes(recipes);
+                showMessage('Resep siap!', 'success');
+
+            } catch (error) {
+                console.error(error);
+                let msg = error.message;
+                if (msg.includes('Failed to fetch')) {
+                    msg = 'Gagal koneksi (CORS Blocked). Gunakan ekstensi browser "Allow CORS" atau cek internet.';
+                }
+                document.getElementById('recipesContainer').innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; color: var(--danger); padding: 20px;">
+                        <h3>❌ Gagal Memuat</h3>
+                        <p>${msg}</p>
+                        <button class="btn-secondary" onclick="generateRecipes()">Coba Lagi</button>
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🍳 Masak Sekarang!';
+            }
+        }
+
+        function buildPrompt() {
+            const ings = state.ingredients.map(i => `${i.name} ${i.amount || ''} ${i.unit}`).join(', ');
+            const spices = Array.from(document.querySelectorAll('.checkbox-group input:checked'))
+                .map(cb => cb.nextElementSibling.textContent).join(', ');
+            const style = document.getElementById('cuisineStyle').value;
+
+            return `
+                Saya punya bahan: ${ings}. 
+                Bumbu tersedia: ${spices}.
+                Tolong buatkan 2 resep masakan dengan gaya ${style}.
+                
+                PENTING: Jawab HANYA dengan JSON valid format berikut (tanpa markdown):
+                {
+                    "recipes": [
+                        {
+                            "name": "Nama Resep",
+                            "time": "XX Menit",
+                            "difficulty": "Mudah/Sedang",
+                            "ingredients": ["bahan 1", "bahan 2"],
+                            "steps": ["langkah 1", "langkah 2"],
+                            "tips": "Satu tips singkat"
+                        }
+                    ]
+                }
+            `;
+        }
+
+        function parseResponse(text) {
+            // Bersihkan markdown ```json ... ```
+            const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+            try {
+                const json = JSON.parse(cleanText);
+                return json.recipes || [];
+            } catch (e) {
+                console.error("JSON Parse Error", text);
+                throw new Error("Gagal membaca format resep dari AI.");
+            }
+        }
+
+        // --- RENDERING & UTILS ---
+        function showLoading() {
+            document.getElementById('recipesContainer').innerHTML = `
+                <div class="loading-container">
+                    <div style="font-size: 3em; animation: spin 1s infinite;">🍳</div>
+                    <p>Chef AI sedang berpikir...</p>
+                </div>
+            `;
+        }
+
+        function renderRecipes(recipes) {
+            const container = document.getElementById('recipesContainer');
+            if (recipes.length === 0) {
+                container.innerHTML = '<p>Maaf, tidak ada resep yang dihasilkan.</p>';
+                return;
+            }
+
+            container.innerHTML = recipes.map((recipe, idx) => `
+                <div class="recipe-card">
+                    <div class="recipe-header">
+                        <div class="recipe-title">${recipe.name}</div>
+                        <div class="recipe-badges">
+                            <span class="badge">⏱️ ${recipe.time}</span>
+                            <span class="badge">📊 ${recipe.difficulty}</span>
+                        </div>
+                    </div>
+                    <div class="recipe-body">
+                        <div class="recipe-section">
+                            <h4>Bahan</h4>
+                            <ul>${recipe.ingredients.map(i => `<li>${i}</li>`).join('')}</ul>
+                        </div>
+                        <div class="recipe-section">
+                            <h4>Cara Buat</h4>
+                            <ol>${recipe.steps.map(s => `<li>${s}</li>`).join('')}</ol>
+                        </div>
+                        ${recipe.tips ? `<div style="background:#e8f8f5; padding:10px; border-radius:5px; font-size:0.9em;">💡 <b>Tips:</b> ${recipe.tips}</div>` : ''}
+                    </div>
+                    <div class="recipe-footer">
+                        <button onclick='saveFavorite(${JSON.stringify(recipe)})'>❤️ Simpan</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- FAVORITES SYSTEM ---
+        function saveFavorite(recipe) {
+            let favs = JSON.parse(localStorage.getItem('favRecipes') || '[]');
+            favs.push(recipe);
+            localStorage.setItem('favRecipes', JSON.stringify(favs));
+            showMessage('Resep disimpan ke Favorit!', 'success');
+        }
+
+        function openFavorites() {
+            const favs = JSON.parse(localStorage.getItem('favRecipes') || '[]');
+            const container = document.getElementById('favoritesList');
+            
+            if (favs.length === 0) {
+                container.innerHTML = '<p style="text-align:center; padding:20px;">Belum ada resep favorit.</p>';
+            } else {
+                container.innerHTML = favs.map((recipe, idx) => `
+                    <div style="border-bottom:1px solid #eee; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <strong>${recipe.name}</strong> <br>
+                            <small>${recipe.time} | ${recipe.difficulty}</small>
+                        </div>
+                        <button onclick="deleteFavorite(${idx})" style="background:#ffdddd; border:none; padding:5px 10px; cursor:pointer; border-radius:4px;">Hapus</button>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('favoritesModal').classList.add('active');
+        }
+
+        function deleteFavorite(idx) {
+            let favs = JSON.parse(localStorage.getItem('favRecipes') || '[]');
+            favs.splice(idx, 1);
+            localStorage.setItem('favRecipes', JSON.stringify(favs));
+            openFavorites(); // Refresh list
+        }
+
+        // --- UTILITIES ---
+        function showMessage(text, type) {
+            const el = document.getElementById('statusMessage');
+            el.textContent = text;
+            el.className = `success-message show`;
+            el.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--success)';
+            el.style.backgroundColor = type === 'error' ? '#fadbd8' : '#d4efdf';
+            setTimeout(() => el.classList.remove('show'), 3000);
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
